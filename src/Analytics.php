@@ -33,7 +33,7 @@ class Analytics
         $this->app = $app;
         $this->config = $this
             ->collect($this->app->make('config')->get('analytics', []))
-            ->map(fn ($value): Collection => $this->collect($value));
+            ->map(fn ($value) => is_array($value) ? $this->collect($value) : $value);
 
         add_action('init', fn () => $this->bootModules(), 99);
 
@@ -64,7 +64,11 @@ class Analytics
             return false;
         }
 
-        $environments = (array) $this->config->get('environments', ['production']);
+        $environments = $this->config->get('environments', ['production']);
+        if ($environments instanceof Collection) {
+            $environments = $environments->all();
+        }
+        $environments = (array) $environments;
         if ($environments !== [] && ! in_array($this->currentEnvironment(), $environments, true)) {
             return false;
         }

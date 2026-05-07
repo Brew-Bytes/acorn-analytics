@@ -66,7 +66,11 @@ abstract class AbstractModule implements Module
             return false;
         }
 
-        $environments = (array) $this->globals->get('environments', ['production']);
+        $environments = $this->globals->get('environments', ['production']);
+        if ($environments instanceof Collection) {
+            $environments = $environments->all();
+        }
+        $environments = (array) $environments;
         if ($environments !== [] && ! in_array($this->currentEnvironment(), $environments, true)) {
             return false;
         }
