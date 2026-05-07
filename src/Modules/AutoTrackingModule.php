@@ -74,9 +74,11 @@ class AutoTrackingModule extends AbstractModule
       try {
         var url = new URL(link.href, window.location.href);
         if (url.hostname && url.hostname !== window.location.hostname) {
-          emit('click', { outbound: true, link_url: link.href, link_domain: url.hostname, link_text: text });
+          emit('outbound_click', { link_url: link.href, link_domain: url.hostname, link_text: text });
         }
-      } catch (err) {}
+      } catch (err) {
+        console.warn('[acorn-analytics] outbound URL parse failed:', err);
+      }
     }
   });
 

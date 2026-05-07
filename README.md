@@ -92,10 +92,13 @@ every enabled provider with no extra wiring.
 | `email-clicks` | ✅ on | `email_click` | `{ email, link_text }` |
 | `file-downloads` | ✅ on | `file_download` | `{ file_url, file_extension, link_text }` |
 | `scroll-depth` | ✅ on | `scroll` | `{ percent_scrolled }` (one of `[25, 50, 75, 100]`) |
-| `outbound-links` | ❌ off | `click` | `{ outbound: true, link_url, link_domain, link_text }` |
+| `outbound-links` | ❌ off | `outbound_click` | `{ link_url, link_domain, link_text }` |
 
 Outbound-link tracking defaults off because GA4's Enhanced Measurement
-covers it natively — enabling both would double-count.
+already auto-collects outbound clicks (as `click` events with its own
+params). Enabling our `outbound-links` sub-feature ships a separate
+`outbound_click` event so the two don't collide if you happen to have
+both enabled.
 
 Configure in `config/analytics.php`:
 
@@ -114,6 +117,19 @@ Configure in `config/analytics.php`:
 
 Set the top-level `enabled` to `false` to disable the entire module, or
 flip individual sub-features.
+
+### A note on PII
+
+The default `phone_click` and `email_click` payloads include the actual
+phone number and email address from the clicked link's `href`. For a typical
+business site this is your **own** published contact info — already public
+HTML, not visitor PII, and safe to send to GA4.
+
+If your site contains user-submitted phone/email links (vCard exports,
+marketplace seller profiles, etc.), those values *would* be visitor PII —
+and Google's [no-PII rule](https://support.google.com/analytics/answer/6366371)
+applies. In that case, either disable the relevant sub-feature or extend
+the module to redact / hash values before emit.
 
 ## Cookie consent integration
 
