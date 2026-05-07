@@ -40,9 +40,9 @@ class AutoTrackingModule extends AbstractModule
 (function(){
   var cfg = __CFG__;
   function emit(name, data){
-    if (window.AcornAnalytics && typeof window.AcornAnalytics.track === 'function') {
-      window.AcornAnalytics.track(name, data);
-    }
+    window.dispatchEvent(new CustomEvent('analytics:event', {
+      detail: Object.assign({ name: name }, data || {})
+    }));
   }
 
   document.addEventListener('click', function(e){
