@@ -26,6 +26,7 @@ class Analytics
         Modules\GoogleTagManagerModule::class,
         Modules\GoogleAnalyticsModule::class,
         Modules\PlausibleModule::class,
+        Modules\AutoTrackingModule::class,
     ];
 
     public function __construct(Application $app)

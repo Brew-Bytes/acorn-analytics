@@ -79,6 +79,42 @@ You can also use the package's tiny PHP-free JS API:
 window.AcornAnalytics.track('purchase', { value: 49 });
 ```
 
+## Automatic event tracking
+
+`acorn-analytics` ships an `auto-tracking` module that wires delegated DOM
+listeners for the four interactions every site ends up tracking by hand.
+Events flow through the same bridge as your custom events — they reach
+every enabled provider with no extra wiring.
+
+| Sub-feature | Default | Event name | Sample payload |
+| --- | --- | --- | --- |
+| `phone-clicks` | ✅ on | `phone_click` | `{ phone_number, link_text }` |
+| `email-clicks` | ✅ on | `email_click` | `{ email, link_text }` |
+| `file-downloads` | ✅ on | `file_download` | `{ file_url, file_extension, link_text }` |
+| `scroll-depth` | ✅ on | `scroll` | `{ percent_scrolled }` (one of `[25, 50, 75, 100]`) |
+| `outbound-links` | ❌ off | `click` | `{ outbound: true, link_url, link_domain, link_text }` |
+
+Outbound-link tracking defaults off because GA4's Enhanced Measurement
+covers it natively — enabling both would double-count.
+
+Configure in `config/analytics.php`:
+
+```php
+'auto-tracking' => [
+    'enabled' => true,
+    'phone-clicks' => true,
+    'email-clicks' => true,
+    'file-downloads' => true,
+    'download-extensions' => ['pdf', 'doc', 'docx', 'zip', /* ... */],
+    'scroll-depth' => true,
+    'scroll-depth-thresholds' => [25, 50, 75, 100],
+    'outbound-links' => false,
+],
+```
+
+Set the top-level `enabled` to `false` to disable the entire module, or
+flip individual sub-features.
+
 ## Cookie consent integration
 
 Set in `config/analytics.php`:
@@ -102,6 +138,36 @@ Compatible with most consent platforms — point `event` at:
 | OneTrust     | `OneTrustGroupsUpdated`     |
 | Cookiebot    | `CookiebotOnAccept`         |
 | Cookieyes    | `cookieyes:accepted`        |
+
+## Troubleshooting
+
+**Provider scripts aren't appearing in `<head>`.** Most likely your environment
+isn't in the configured `environments` list. Defaults to `['production']` only.
+Two common surprises:
+
+- **Local-by-Flywheel** sites set `WP_ENVIRONMENT_TYPE=local`, not `development`.
+  Add `'local'` to your `environments` array (or set `environments => []` to fire
+  in every environment for testing).
+- **Bedrock's `WP_ENV` constant** takes precedence if defined.
+
+**`env()` calls return `null` on a non-Bedrock WP install.** The default
+`config/analytics.php` reads IDs from environment variables (`env('GA4_MEASUREMENT_ID')`
+etc.). On a vanilla WordPress install (no Bedrock `.env` loader), those calls
+return `null` and modules silently no-op. Either:
+
+- Set the IDs as PHP constants in `wp-config.php` and read them with `defined()`,
+  or
+- Hardcode IDs directly in your published `config/analytics.php`:
+  ```php
+  'google-analytics' => ['id' => 'G-XXXXXXX'],
+  ```
+
+**Provider just installed but isn't loading.** Acorn caches the package
+manifest at `wp-content/cache/acorn/framework/cache/packages.php`. If
+`composer require` was run from outside a shell that has WP-CLI DB access
+(common on Local-by-Flywheel), the post-autoload-dump's cache invalidation
+silently fails. Delete that file plus its sibling `services.php` to force a
+rebuild.
 
 ## What it doesn't do
 

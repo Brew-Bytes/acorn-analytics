@@ -44,9 +44,7 @@ abstract class AbstractModule implements Module
             return;
         }
 
-        $method = method_exists($this, 'handle') ? 'handle' : '__invoke';
-
-        $this->app->call([$this, $method]);
+        $this->app->call([$this, 'handle']);
     }
 
     /**

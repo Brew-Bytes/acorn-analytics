@@ -107,4 +107,38 @@ return [
         'script' => env('PLAUSIBLE_SCRIPT_URL', 'https://plausible.io/js/script.js'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Automatic event tracking
+    |--------------------------------------------------------------------------
+    |
+    | Wires delegated DOM listeners that emit `analytics:event` CustomEvents
+    | for common interactions — phone/email link clicks, file downloads,
+    | scroll-depth milestones, and (optionally) outbound link clicks. Events
+    | flow through the same bridge as your custom events, so they reach every
+    | enabled provider with no extra wiring.
+    |
+    | Outbound-link tracking defaults OFF because GA4's Enhanced Measurement
+    | covers it natively — enabling both would double-count.
+    |
+    */
+
+    'auto-tracking' => [
+        'enabled' => true,
+
+        'phone-clicks' => true,
+        'email-clicks' => true,
+
+        'outbound-links' => false,
+
+        'file-downloads' => true,
+        'download-extensions' => [
+            'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+            'zip', 'rar', '7z', 'csv', 'txt',
+        ],
+
+        'scroll-depth' => true,
+        'scroll-depth-thresholds' => [25, 50, 75, 100],
+    ],
+
 ];
